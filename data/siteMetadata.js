@@ -8,11 +8,11 @@ const siteMetadata = {
   description: null,
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://bravo-kernel.com/',
+  siteUrl: 'https://bravo-kernel.com',
   siteRepo: 'https://github.com/bravo-kernel/bravo-kernel.com/',
-  siteLogo: '/static/images/logo.png',
+  siteLogo: '/static/images/logo.png', // used for SEO
   image: '/static/images/avatar.png',
-  socialBanner: 'static/images/twitter-card.png',
+  socialBanner: '/static/images/twitter-card.png',
   email: null,
   github: 'https://github.com/bravo-kernel',
   twitter: 'https://twitter.com/bravo_kernel',

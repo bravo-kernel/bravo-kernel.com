@@ -1,0 +1,80 @@
+---
+title: How to create Scheduled Tasks for Powershell on Windows Server 2012
+date: 2015-09-21 18:45:43
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- windows
+- powershell
+layout: PostSimple
+---
+Properly configured Scheduled Tasks for Powershell scripts on Windows Server 2012.
+
+## Creating the service account
+
+Assuming the account only requires local administrator permissions:
+
+- Open the Local Users and Groups console (``lusrmgr.msc``)
+- Create a new local user (service) account used to execute the scheduled task
+- Add the service account to the local Administrators group
+- Open the Local Security console (``gepdit.msc``) and expand:
+  - Local Computer Policy
+  - Windows Settings
+  - Security Settings
+  - Local Policies
+  - User Rights Assignment
+- Open the ``Log on as a service`` policy and make sure to add the service account
+
+## Creating the Scheduled Task
+
+Open the Task Scheduler console (``taskschd.msc``) and create a new task.
+
+### General tab
+
+- Use a meaningful name
+- Specify your service account using the ``Change User or Group`` button
+- Select ``Run whether user user is logged in or not``
+- Select the ``hidden`` option
+- Set the ``Configure for`` option to Windows Server 2012
+
+### Triggers tab
+
+Create two triggers:
+
+- One using begin ``At startup`` so the scheduled task will survive reboots
+- One using begin ``At task creation/modification`` so it will run from the moment the task is created
+
+Make sure both triggers share the same configuration:
+
+- Select ``Repeat task at every`` and set to e.g. 30 minutes
+- Change the duration to ``Indefinitely``
+- Be proactive; stop the task if it runs longer than ``1 hour``
+- Select the ``Enabled`` checkbox
+
+### Actions tab
+
+Create a new action:
+
+- Select ``Start a program``
+- Set the ``Program/script`` field to (just) ``Powershell``
+- Set the ``Arguments`` field to ``-noprofile -executionpolicy bypass -file "c:\your-script.ps1"``
+- Even though this is optional it would be wise to fill the ``Start in (optional)``
+field with the full path of the directory your script is located in
+
+> **Note:** do NOT use the ``-noexit`` argument as this will keep your task running
+> indefinitely, preventing it to reach ``Ready`` state after completion.
+
+### Conditions tab
+
+Nothing to do here
+
+### Settings tab
+
+Make sure to set the bottom most dropdown to ``Stop the existing instance``.
+
+## Round up
+
+On saving the task it will:
+
+- Start immediately (status ``Running``)
+- Change to status ``Queued`` after it has completed
+- Will be executed again every other 30 minutes

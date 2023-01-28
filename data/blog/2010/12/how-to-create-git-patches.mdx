@@ -1,0 +1,37 @@
+---
+title: How to create Git patches
+date: 2010-12-06 14:18:17 +0200
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- git
+layout: PostSimple
+---
+
+This example will create a patch for the CakeDC Comments Plugin:
+
+```
+cd /app/plugins/comments
+git fetch
+git checkout master
+git checkout master
+git checkout -b local_fix
+```
+
+You are now working in your local branch "local_fix" so:
+
+- Make required changes to the code
+- Commit the changes
+- Create the patch
+
+In this case:
+
+```
+git add controllers/comments_controller.php
+git commit -m "Fix for broken Search plugin usage on admin_index page"
+git format-patch origin/master
+```
+
+If all went well:
+
+- There should be a file named "0001-Fix-for-broken-Search-plugin-usage-on-admin_index-page.patch" in your /app/plugins/comments directory
+- Send the file to the big boys for approval

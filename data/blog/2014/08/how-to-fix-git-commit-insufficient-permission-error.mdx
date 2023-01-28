@@ -1,0 +1,22 @@
+---
+title: How to fix Git commit insufficient permission error
+date: 2014-08-05 14:45:52 +0200
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- git
+layout: PostSimple
+---
+
+When `git commit` gives this error:
+
+```
+error: insufficient permission for adding an object to repository database .git/objects
+```
+
+Take back ownership of all Git objects by runnning:
+
+```
+cd <path-to-repo>
+cd .git/objects
+sudo chown -R <username>:<username> *
+```

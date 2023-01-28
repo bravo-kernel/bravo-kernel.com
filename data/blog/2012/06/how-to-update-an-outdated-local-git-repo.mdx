@@ -1,0 +1,19 @@
+---
+title: How to update an outdated local Git repo
+date: 2012-06-28 16:01:12 +0200
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- git
+layout: PostSimple
+---
+
+When your local repository is behind/untracked this will:
+
+- Delete all local files that are no longer present in the remote repo
+- Replace all local files that have newer versions in the remote repo
+
+```
+git reset --hard HEAD
+git clean -f -d
+git pull
+```

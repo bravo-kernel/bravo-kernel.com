@@ -1,0 +1,30 @@
+---
+title: How to reinstall Octopress with Octostrap3 theme on Debian
+date: 2014-08-14 17:44:33 +0200
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- octopress
+- blog
+- linux
+- debian
+layout: PostSimple
+---
+
+### Reinstall Octopress
+
+```
+cd [path-to-repos]
+git clone git@github.com:[your-github-pages-repo.git] octopress
+cd octopress
+git checkout source
+rake setup_github_pages
+```
+
+### Re-enable theme submodule
+
+```
+git submodule init
+git submodule update
+cd .themes/octostrap3
+git checkout master
+```

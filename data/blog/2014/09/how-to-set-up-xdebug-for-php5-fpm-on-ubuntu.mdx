@@ -1,0 +1,30 @@
+---
+title: How to set up Xdebug for PHP5-FPM on Ubuntu
+date: 2014-09-01 10:36:52 +0200
+lastmod: 2018-03-14 13:00:00 +0200
+tags:
+- linux
+- ubuntu
+- xdebug
+- devops
+layout: PostSimple
+---
+
+Install required packages:
+
+```
+sudo apt-get install php5-dev php-pear
+sudo pecl install xdebug
+```
+
+Open file `/etc/php5/fpm/php.ini` and add the following line to the "Dynamic Extensions" section:
+
+```
+zend_extension="/usr/lib/php5/20121212/xdebug.so"
+```
+
+Restart PHP:
+
+```
+sudo service php5-fpm restart
+```

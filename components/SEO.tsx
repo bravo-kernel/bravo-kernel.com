@@ -76,7 +76,7 @@ export const PageSEO = ({ title, description }: PageSEOProps) => {
 export const TagSEO = ({ title, description }: PageSEOProps) => {
   const ogImageUrl = siteMetadata.siteUrl + siteMetadata.socialBanner
   const twImageUrl = siteMetadata.siteUrl + siteMetadata.socialBanner
-  const router = useRouter()
+  // const router = useRouter()
   return (
     <>
       <CommonSEO
@@ -86,14 +86,14 @@ export const TagSEO = ({ title, description }: PageSEOProps) => {
         ogImage={ogImageUrl}
         twImage={twImageUrl}
       />
-      <Head>
+      {/* <Head>
         <link
           rel="alternate"
           type="application/rss+xml"
           title={`${description} - RSS feed`}
           href={`${siteMetadata.siteUrl}${router.asPath}/feed.xml`}
         />
-      </Head>
+      </Head> */}
     </>
   )
 }

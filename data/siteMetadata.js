@@ -5,7 +5,7 @@ const siteMetadata = {
   title: 'Bravo Kernel',
   author: 'Bravo Kernel',
   headerTitle: 'Bravo Kernel',
-  description: null,
+  description: 'Bravo Kernel Blog',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://bravo-kernel.com',

@@ -81,13 +81,18 @@ module.exports = () => {
           permanent: true,
         },
         {
-          source: '/:year/:month/:slug',
-          destination: '/blog/:year/:month/:slug',
+          source: '/categories/:category',
+          destination: '/tags/:category',
           permanent: true,
         },
         {
-          source: '/categories/:category',
-          destination: '/tags/:category',
+          source: '/page/:pageNumber',
+          destination: '/blog/page/:pageNumber',
+          permanent: true,
+        },
+        {
+          source: '/:year(\\d{4})/:month(\\d{2})/:slug',
+          destination: '/blog/:year/:month/:slug',
           permanent: true,
         },
       ]

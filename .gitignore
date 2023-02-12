@@ -28,6 +28,9 @@ public/sitemap.xml
 # search
 /public/search.json
 
+# favicons
+!/public/browserconfig.xml
+
 # typescript
 tsconfig.tsbuildinfo
 

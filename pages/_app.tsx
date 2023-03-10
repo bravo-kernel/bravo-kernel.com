@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/react'
 import '@/css/tailwind.css'
 import '@/css/prism.css'
 import 'katex/dist/katex.css'
+import '@/css/overrides.css'
 // import '@/css/docsearch.css' // Uncomment if using algolia docsearch
 // import '@docsearch/css' // Uncomment if using algolia docsearch
 

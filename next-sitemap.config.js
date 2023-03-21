@@ -1,4 +1,4 @@
-const siteMetadata = require('/data/siteMetadata')
+const siteMetadata = require('./data/siteMetadata')
 
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {

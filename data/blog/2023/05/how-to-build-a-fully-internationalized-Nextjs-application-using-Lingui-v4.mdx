@@ -1,5 +1,5 @@
 ---
-title: How to build a fully localized Nextjs application using Lingui v4
+title: How to build a fully internationalized Nextjs application using Lingui v4
 date: 2021-05-01 10:18:07
 draft: false
 tags:
@@ -10,13 +10,13 @@ tags:
 layout: PostSimple
 ---
 
-In this tutorial we will build a fully working localized Nextjs sample application using the latest v4 version of Lingui.js.
+In this tutorial we will build a fully working internationalized (i18n) Nextjs sample application using the latest v4 version of Lingui.js.
 
-After completing the tutorial, you should have a good understanding of the Lingui internationalization/i18n process and a Typescript application with:
+After completing the tutorial, you should have a good understanding of the Lingui internationalization process and a Typescript application with:
 
 - Support for three languages (English, Dutch and Pseudo)
 - Nextjs [subpath routing](https://nextjs.org/docs/advanced-features/i18n-routing#sub-path-routing)
-- Localization files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) translations
+- Translation files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) translations
 - A language switcher (optionally)
 
 ## TL;DR
@@ -48,7 +48,7 @@ npm install @lingui/swc-plugin@4.0.0-next.3 --save-dev --legacy-peer-deps
 
 ## 2. Setting up Lingui
 
-Lingui v4 comes with a lot of improvements that make setting up localization a lot easier. For example,
+Lingui v4 comes with a lot of improvements that make setting up internationalization a lot easier. For example,
 plural support now comes out of the box and we no longer need to configure babel because we can use the Lingui 
 swc-plugin instead. For an overview of all new v4 features and changes, please refer to these
 [Migrating to v4 release notes](https://github.com/lingui/js-lingui/blob/next/website/docs/releases/migration-4.md).
@@ -86,7 +86,7 @@ module.exports = {
 
 We will get into details later but basically this configuration:
 
-- Is the single source of truth for all our Lingui/Nextjs localization settings
+- Is the single source of truth for all our Lingui/Nextjs internationalization settings
 - Uses English (en-us) as the base language
 - Will ony translate files found in the `include` paths
 - Will generate translation files in `*.po` format, in the folder specified as `path`
@@ -123,7 +123,7 @@ module.exports = nextConfig
 
 This will:
 
-- Make `lingui.config.js` the single source of truth for Nextjs localization
+- Make `lingui.config.js` the single source of truth for Nextjs internationalizated routing
 - Enable the Lingui [swc-plugin](https://github.com/lingui/swc-plugin)
 
 ### package.json

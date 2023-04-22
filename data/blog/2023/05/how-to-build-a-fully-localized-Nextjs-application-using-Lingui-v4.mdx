@@ -1,0 +1,477 @@
+---
+title: How to build a fully localized Nextjs application using Lingui v4
+date: 2021-05-01 10:18:07
+draft: false
+tags:
+- nextjs
+- lingui
+- i18n
+- crowdin
+layout: PostSimple
+---
+
+In this tutorial we will build a fully working localized Nextjs sample application using the latest v4 version of Lingui.js.
+
+After completing the tutorial, you should have a good understanding of the Lingui internationalization/i18n process and a Typescript application with:
+
+- Support for three languages (English, Dutch and Pseudo)
+- Nextjs [subpath routing](https://nextjs.org/docs/advanced-features/i18n-routing#sub-path-routing)
+- Localization files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) translations
+- A language switcher (optionally)
+
+## 1. Preparing the Nextjs application
+
+Create a basic Nextjs application using the following configuration options:
+
+- Typescript: `yes`
+- ESLint: `yes`
+- Tailwind CSS: `yes`
+- Use src directory: `yes`
+- Use experimental app directory: `no`
+
+```bash
+npx create-next-app@latest lingui-v4-app
+```
+
+Install the Lingui dependencies:
+
+```bash
+cd lingui-v4-app
+npm install @lingui/core@4.0.0-next.8 @lingui/react@4.0.0-next.8
+npm install @lingui/cli@4.0.0-next.8 @lingui/loader@4.0.0-next.8 @lingui/macro@4.0.0-next.8 --save-dev
+npm install @lingui/swc-plugin@4.0.0-next.3 --save-dev --legacy-peer-deps
+```
+
+## 2. Setting up Lingui
+
+Lingui v4 comes with a lot of improvements that make setting up localization a lot easier. For example,
+plural support now comes out of the box and we no longer need to configure babel because we can use the Lingui 
+swc-plugin instead. For an overview of all new v4 features and changes, please refer to these
+[Migrating to v4 release notes](https://github.com/lingui/js-lingui/blob/next/website/docs/releases/migration-4.md).
+
+### lingui.config.js
+
+Following Lingui best practices, first create file `lingui.config.js` in the root of your project with below content.
+
+
+```js
+const { formatter } = require("@lingui/format-po")
+
+const locales = ["en-us", "nl-nl"]
+
+if (process.env.NODE_ENV !== "production") {
+  locales.push("pseudo")
+}
+
+module.exports = {
+  locales: locales,
+  sourceLocale: "en-us",
+  pseudoLocale: "pseudo",
+  catalogs: [
+    {
+      path: "src/translations/locales/{locale}",
+      include: [
+        "src/pages",
+        "src/translations/languages.ts",
+      ],
+    },
+  ],
+  format: formatter({ origins: false }),
+}
+```
+
+We will get into details later but basically this configuration:
+
+- Is the single source of truth for all our Lingui/Nextjs localization settings
+- Uses English (en-us) as the base language
+- Will ony translate files found in the `include` paths
+- Will generate translation files in `*.po` format, in the folder specified as `path`
+- Supports two languages when in production mode
+- Supports [pseudolocalization](https://github.com/lingui/js-lingui/blob/next/website/docs/guides/pseudolocalization.md)
+**but only** when in development mode
+
+### next.config.js
+
+To make Nextjs [Internationalized (i18n) Routing](https://nextjs.org/docs/advanced-features/i18n-routing)
+aware of our Lingui configuration, update `next.config.js` as shown below. 
+
+```js
+const linguiConfig = require("./lingui.config")
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  experimental: {
+    swcPlugins: [
+      [
+        "@lingui/swc-plugin", {}
+      ],
+    ],
+  },
+  i18n: {
+    locales: linguiConfig.locales,
+    defaultLocale: linguiConfig.sourceLocale,
+  },
+}
+
+module.exports = nextConfig
+```
+
+This will:
+
+- Make `lingui.config.js` the single source of truth for Nextjs localization
+- Enable the Lingui [swc-plugin](https://github.com/lingui/swc-plugin)
+
+### package.json
+
+Later on, we will use the [Lingui CLI](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/cli.md)
+to extract translatable messages in our code into `*.po` message catalog files.
+
+To prepare for extracting, add the following npm run script to your `package.json`
+
+```json
+    "translations:extract": "lingui extract --clean",
+```
+
+## 3. Setting up the application
+
+### _document.tsx
+
+Nextjs will automatically update the `lang` meta tag for your pages using the active locale **but only**
+after you have updated `src/pages/_document.tsx` and have changed
+
+```tsx
+<Html lang="en">
+```
+
+to
+
+```
+<Html>
+```
+
+To make sure things work as expected:
+
+1. Run `npm run dev`
+2. Browse to `localhost:3000/nl-nl`
+3. Inspect the source code of the page and make sure it starts with `<html lang="nl-nl">`
+
+### Lingui folders
+
+To make sure Lingui will function as expected, create the following two folders:
+
+- `src/translations`
+- `src/translations/locales`
+
+### languages.ts
+
+Create `src/translations/languages.ts` which will:
+
+- Help keep our code clean
+- Prepare for adding additional languages
+- Allow us to run our first CLI message extraction (which will detect the three translatable messages using the Lingui `msg` backtick function call)
+
+```ts
+import { MessageDescriptor } from "@lingui/core"
+import { msg } from "@lingui/macro"
+
+interface Languages {
+  locale: string
+  msg: MessageDescriptor
+  territory?: string
+}
+
+export type LOCALES = "en-us" | "nl-nl" | "pseudo"
+
+const languages: Languages[] = [
+  {
+    locale: "en-us",
+    msg: msg`English`,
+    territory: "US",
+  },
+  {
+    locale: "nl-nl",
+    msg: msg`Dutch`,
+    territory: "NL",
+  },
+]
+
+if (process.env.NODE_ENV !== "production") {
+  languages.push({
+    locale: "pseudo",
+    msg: msg`Pseudo`,
+  })
+}
+
+export default languages
+```
+
+> **Lingui Pro-Tip:** stick to using natural language for your translatable messages and avoid using IDs at all cost. 
+> This will prevent double work and will lead to much cleaner code and a better translator experience. 
+
+## 4. Lingui message extraction
+
+Message extraction is an essential step in the internationalization process. It involves:
+
+- Analyzing your code
+- Extracting all translatable messages into a `*.po` message catalog
+- Thereby keeping your message catalogs in-sync with your source code
+
+Even though we currently only have a limited set of translatable message in our code (found in `languages.ts`) we
+will now run an extraction to get familiar with the process.
+
+```bash
+npm run translations:extract
+```
+
+If things went well, your screen should display something similar to:
+
+![Lingui extract command line result](/static/images/blog/2023/05/how-to-build-a-fully-localized-Nextjs-application-using-Lingui-v4/lingui-extract-result.png)
+
+Which basically means that Lingui extraction:
+
+- Has detected three active languages
+- Has therefore generated three message catalogs:
+    - `/src/translations/locales/en-us.po`
+    - `/src/translations/locales/nl-nl.po`
+    - `/src/translations/locales/pseudo.po`
+- Has found three translatable messages in our source code
+- Has detected that three messages are currently untranslated for both the `nl-nl` and `pseudo` locales
+
+> Please note that the `source` and `pseudo` languages should NEVER be translated/touched
+
+## 5. Message catalogs
+
+The message catalogs we have just extracted contain all translatable messages and their translations.
+
+If you open our freshly generated `/src/translations/locales/nl-nl.po` file it should look similar to:
+
+```po
+msgid ""
+msgstr ""
+"X-Generator: @lingui/cli\n"
+
+msgid "Dutch"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid "Pseudo"
+msgstr ""
+```
+
+Please be aware that manually updating these catalog files is **highly discouraged**. Alternatives like the
+[Crowdin online editor](https://support.crowdin.com/online-editor/)
+provide more efficient workflows, better automation possibilities and a far super translator experience.
+
+Nevertheless, for now, we will do our first actual translation by changing the content of `/src/translations/locales/nl-nl.po` to:
+
+```
+msgid ""
+msgstr ""
+"X-Generator: @lingui/cli\n"
+
+msgid "Dutch"
+msgstr "Nederlands"
+
+msgid "English"
+msgstr "Engels"
+
+msgid "Pseudo"
+msgstr "Pseudo"
+```
+
+If you rerun `npm run translations:extract`, you should see that `nl-nl` no longer has missing translations
+which means that we are now able to actually start displaying those translations inside our application.
+
+## 6. Activating Lingui locales
+
+Before we can start displaying translated messages we first need to update our application so that it will
+activate and load the correct locale (using the active Nextjs i18n route).
+
+### utils.ts
+
+Create `src/translations/utils.ts` with below two helper functions and where:
+
+- `loadCatalog()` will be used on every page that requires translating
+- `useLinguiInit()` will only be used by `_app.tsx` to initialize Lingui
+
+```ts
+import { i18n, Messages } from "@lingui/core"
+import { useRouter } from "next/router"
+
+export async function loadCatalog(locale: string) {
+  const { messages } = await import(`@lingui/loader!./locales/${locale}.po`)
+
+  return messages
+}
+
+export function useLinguiInit(messages: Messages) {
+  const router = useRouter()
+  const locale = router.locale || router.defaultLocale!
+  i18n.loadAndActivate(locale, messages, false)
+
+  return i18n
+}
+```
+
+### _app.tsx
+
+We will now enable Lingui for our application by updating `src/pages/_app.tsx` so that it uses `useLinguiInit()` and the `I18nProvider` and looks like this:
+
+```tsx
+import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import { I18nProvider } from "@lingui/react";
+import { useLinguiInit } from "src/translations/utils";
+
+export default function App({ Component, pageProps }: AppProps) {
+  const initializedI18n = useLinguiInit(pageProps.i18n);
+
+  return (
+    <I18nProvider i18n={initializedI18n}>
+      <Component {...pageProps} />
+    </I18nProvider>
+  );
+}
+```
+
+### index.ts
+
+Lingui v4 supports all [Nextjs page rendering methods](https://nextjs.org/docs/basic-features/pages) and because
+our application will use Server Side Rendering (SSR) for our index page we replace the content of 
+`src/pages/index.tsx` with the following code:
+
+```ts
+import styles from "@/styles/Home.module.css";
+import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { loadCatalog } from "src/translations/utils";
+import { Trans } from "@lingui/macro";
+import Link from 'next/link'
+
+export default function Home() {
+  return (
+    <main className={styles.main}>
+      <div>
+        <ul>
+          <li><Link href="/en-us">English: <Trans>English</Trans></Link></li>
+          <li><Link href="/nl-nl">Dutch: <Trans>Dutch</Trans></Link></li>
+          <li><Link href="/pseudo">Pseudo: <Trans>Pseudo</Trans></Link></li>
+        </ul>
+      </div>
+    </main>
+  );
+}
+
+export async function getServerSideProps(
+  ctx: GetServerSidePropsContext
+): Promise<GetServerSidePropsResult<any>> {
+  return {
+    props: {
+      i18n: await loadCatalog(ctx.locale as string),
+    },
+  };
+}
+```
+
+If you browse to `localhost:3000` you should now see the following:
+
+- A list with our three languages
+- Clicking a language will load the translations for that language, handled by the Lingui `Trans` macro
+- When browsing to pseudo, diacritics will be shown for all messages that require a translation which is very useful for debugging purposes
+
+### 404.tsx
+
+Because the Nextjs 404 page is rendered using Static Generation (SSG) we cannot use `GetServerSideProps` but have to use
+`GetStaticProps` instead. To make things interesting we will:
+
+- Add an additional translatable message but this time using the Lingui `t` macro
+- Run a new message extraction
+- Update the Dutch `nl-nl` message catalog
+- See our translated 404 page in action
+
+First create `src/pages/404.tsx` with the following content:
+
+```tsx
+import Head from "next/head";
+import { GetStaticPropsContext, GetStaticPropsResult } from "next";
+import { t, Trans } from "@lingui/macro";
+import { loadCatalog } from "@/translations/utils";
+
+export default function Custom404() {
+  return (
+    <>
+      <Head>
+        <title>{t`Page Not Found`}</title>
+      </Head>
+      <h1>
+        <Trans>Page Not Found</Trans>
+      </h1>
+    </>
+  );
+}
+
+export async function getStaticProps(
+  ctx: GetStaticPropsContext
+): Promise<GetStaticPropsResult<any>> {
+  return {
+    props: {
+      i18n: await loadCatalog(ctx.locale as string),
+    },
+  };
+}
+
+```
+
+Now run `npm run translations:extract` and update the `nl-nl` message catalog so that it looks like this:
+
+```po
+msgid ""
+msgstr ""
+"X-Generator: @lingui/cli\n"
+
+msgid "Dutch"
+msgstr "Nederlands"
+
+msgid "English"
+msgstr "Engels"
+
+msgid "Page Not Found"
+msgstr "Pagina niet gevonden"
+
+msgid "Pseudo"
+msgstr "Pseudo"
+```
+
+If things went well, browsing to the non-existing page `localhost:3000/nl-nl/whatever` should show:
+
+- Page title using Dutch message for `Page Not Found`
+- Html using Dutch message for `Page Not Found`
+
+## 7. Locale Switcher
+
+No internationalized application is complete without a proper locale switcher that allows the user 
+to switch languages using a dropdown menu. To prevent duplication of already available information, 
+please turn to these excellent examples for inspiration:
+
+- [Lingui Switcher component](https://github.com/lingui/js-lingui/blob/next/examples/nextjs-swc/src/components/Switcher.tsx)
+- [RankMyWallet LocaleSwitcher component](https://github.com/alt3/rank-my-wallet/blob/main/src/components/LocaleSwitcher.tsx)
+
+## 8. Good To Know
+
+- Use the Lingui [context property](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/react-patterns.md#providing-a-context-for-a-message) if you want to provide hints to translators
+- Use `msg` for constants and when passing translatable messages between functions
+- Use the Lingui [UseLingui() hook](https://github.com/lingui/js-lingui/blob/next/website/docs/ref/react.md#uselingui)
+or your pages might not update in realtime (e.g. when using the language switcher) 
+
+## 9. Rounding Up
+
+This tutorial should have provided you with a good starting point to properly incorporate localizaton in your Nextjs application but there is more to explore:
+
+- Make sure to read up on the [Lingui React Patterns](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/react-patterns.md)
+for more information about the Lingui macros and when to use them
+- Implement a [next-sitemap](https://github.com/iamvishnusankar/next-sitemap) with support for i18n, implementation example [found here](https://github.com/alt3/rank-my-wallet/pull/107)
+- Try the free version of [Crowdin](https://crowdin) which provides more than sufficient functionality for small(er) projects and includes one Github integration for automated translations via Pull Requests. A description of the Crowdin workflow can be [found here](https://github.com/lingui/js-lingui/blob/next/website/docs/tools/crowdin.md).
+
+If you have any additional questions regarding Lingui or need support, please visit the [Lingui Discord server](https://discord.gg/gFWwAYnMtA).

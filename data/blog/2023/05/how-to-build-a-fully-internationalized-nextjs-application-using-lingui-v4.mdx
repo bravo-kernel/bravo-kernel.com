@@ -10,14 +10,15 @@ tags:
 layout: PostSimple
 ---
 
-In this tutorial we will build a fully working internationalized (i18n) Nextjs sample application using the latest v4 version of Lingui.js.
+In this tutorial we will build an internationalized (i18n) Nextjs application using the latest v4 version of
+[Lingui.js](https://lingui.dev/).
 
 Completing the tutorial should result in a good understanding of the Lingui internationalization process
-as well as a fully functioning Typescript application with:
+as well as a fully functioning Typescript sample application with:
 
 - Support for three languages (English, Dutch and Pseudo)
 - Nextjs [subpath routing](https://nextjs.org/docs/advanced-features/i18n-routing#sub-path-routing)
-- Translation files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) translations
+- Translation files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) online translations
 - A language switcher (optionally)
 
 ## TL;DR
@@ -53,7 +54,7 @@ npm install @lingui/swc-plugin --save-dev
 Lingui v4 comes with a lot of improvements that make setting up internationalization a lot easier. For example,
 plural support now comes out of the box and we no longer need to configure babel because we can use the Lingui 
 swc-plugin instead. For an overview of all new v4 features and changes, please refer to these
-[Migrating to v4 release notes](https://github.com/lingui/js-lingui/blob/next/website/docs/releases/migration-4.md).
+[Migrating to v4 release notes](https://lingui.dev/releases/migration-4).
 
 ### lingui.config.js
 
@@ -94,7 +95,7 @@ We will get into details later but basically this configuration:
 - Will ony translate files found in the `include` paths
 - Will generate translation files in `*.po` format, in the folder specified as `path`
 - Supports two languages when in production mode
-- Supports [pseudolocalization](https://github.com/lingui/js-lingui/blob/next/website/docs/guides/pseudolocalization.md)
+- Supports [pseudolocalization](https://lingui.dev/guides/pseudolocalization)
 **but only** when in development mode
 
 ### next.config.js
@@ -131,7 +132,7 @@ This will:
 
 ### package.json
 
-Later on, we will use the [Lingui CLI](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/cli.md)
+Later on, we will use the [Lingui CLI](https://lingui.dev/tutorials/cli)
 to extract translatable messages in our code into `*.po` message catalog files.
 
 To prepare for extracting, add the following npm run script to your `package.json`
@@ -268,7 +269,9 @@ msgid "Pseudo"
 msgstr ""
 ```
 
-Please be aware that manually updating these catalog files is **highly discouraged**. Alternatives like the
+## 6. Translating messages
+
+Please be aware that manually updating message catalog files is **highly discouraged**. Alternatives like the
 [Crowdin online editor](https://support.crowdin.com/online-editor/)
 provide more efficient workflows, better automation possibilities and a far super translator experience.
 
@@ -292,7 +295,7 @@ msgstr "Pseudo"
 If you rerun `npm run translations:extract`, you should see that `nl-nl` no longer has missing translations
 which means that we are now able to actually start displaying those translations inside our application.
 
-## 6. Activating Lingui locales
+## 7. Activating Lingui locales
 
 Before we can start displaying translated messages we first need to update our application so that it will
 activate and load the correct locale (using the active Nextjs i18n route).
@@ -481,30 +484,38 @@ If things went well, browsing to the non-existing page `localhost:3000/nl-nl/wha
 - Page title using Dutch message for `Page Not Found`
 - Html using Dutch message for `Page Not Found`
 
-## 7. Locale Switcher
+## 9. Locale Switcher
 
 No internationalized application is complete without a proper locale switcher that allows the user 
 to switch languages using a dropdown menu. To prevent duplication of already available information, 
 please turn to these excellent examples for inspiration:
 
-- [Lingui Switcher component](https://github.com/lingui/js-lingui/blob/next/examples/nextjs-swc/src/components/Switcher.tsx)
+- [Lingui Switcher component](https://github.com/lingui/js-lingui/blob/main/examples/nextjs-swc/src/components/Switcher.tsx)
 - [RankMyWallet LocaleSwitcher component](https://github.com/alt3/rank-my-wallet/blob/main/src/components/LocaleSwitcher.tsx)
 
-## 8. Good To Know
+## 10. Good To Know
 
-- Use the Lingui [context property](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/react-patterns.md#providing-a-context-for-a-message) if you want to provide hints to translators
+- Use the Lingui [context property](https://lingui.dev/tutorials/react-patterns#providing-a-context-for-a-message)
+if you want to provide hints to translators
 - Use `msg` for constants and when passing translatable messages between functions
-- Use the Lingui [UseLingui() hook](https://github.com/lingui/js-lingui/blob/next/website/docs/ref/react.md#uselingui)
+- Use the Lingui [UseLingui() hook](https://lingui.dev/ref/react#uselingui)
 or Lingui `t` macros might not update in realtime (e.g. when using the language switcher) 
 
-## 9. Rounding Up
+## 11. Rounding Up
 
-This tutorial should have provided you with a good starting point to properly incorporate localizaton in your Nextjs application but there is more to explore:
+This tutorial should have provided you with a good starting point to properly incorporate localizaton 
+and support multiple languages in your Nextjs application but there is more to explore:
 
-- Make sure to check the various (more extensive) examples in the [Lingui examples folder](https://github.com/lingui/js-lingui/tree/next/examples)
-- Make sure to read up on the [Lingui React Patterns](https://github.com/lingui/js-lingui/blob/next/website/docs/tutorials/react-patterns.md)
-for more information about the Lingui macros and when to use them
-- Implement a [next-sitemap](https://github.com/iamvishnusankar/next-sitemap) with support for i18n, implementation example [found here](https://github.com/alt3/rank-my-wallet/pull/107)
-- Try the free version of [Crowdin](https://crowdin.com) which provides more than sufficient functionality for small(er) projects and includes one Github integration for automated translations via Pull Requests. A description of the Crowdin workflow can be [found here](https://lingui.dev/tools/crowdin).
+- Make sure to read up on background, rationale and various react patterns in the [Lingui documentation](https://lingui.dev/introduction)
+- Make sure to check out the various (more extensive) application examples in the [Lingui examples folder](https://github.com/lingui/js-lingui/tree/main/examples)
+- Try implementing a [next-sitemap](https://github.com/iamvishnusankar/next-sitemap) with support for i18n, implementation example [found here](https://github.com/alt3/rank-my-wallet/blob/main/next-sitemap.config.js)
+
+Lastly, it is **highly recommended** to try the free version of [Crowdin](https://crowdin.com) which provides more than sufficient
+functionality for small(er) projects:
+
+- Superior translator experience because translators can use the online editor, no coding skills required!
+- One Github integration for automated translations via Pull Requests
+- Instant pre-translations for new languages using machine learning
+- A description of the Crowdin workflow can be [found here](https://lingui.dev/tools/crowdin).
 
 If you have any additional questions regarding Lingui or need support, please visit the [Lingui Discord server](https://discord.gg/gFWwAYnMtA).

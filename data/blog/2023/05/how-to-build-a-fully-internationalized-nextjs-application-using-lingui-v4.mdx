@@ -12,7 +12,8 @@ layout: PostSimple
 
 In this tutorial we will build a fully working internationalized (i18n) Nextjs sample application using the latest v4 version of Lingui.js.
 
-After completing the tutorial, you should have a good understanding of the Lingui internationalization process and a Typescript example application with:
+Completing the tutorial should result in a good understanding of the Lingui internationalization process
+as well as a fully functioning Typescript application with:
 
 - Support for three languages (English, Dutch and Pseudo)
 - Nextjs [subpath routing](https://nextjs.org/docs/advanced-features/i18n-routing#sub-path-routing)
@@ -415,7 +416,7 @@ because untranslated elements will not contain diacritics
 ### 404.tsx
 
 Because the Nextjs 404 page is rendered using Static Generation (SSG) we cannot use `GetServerSideProps` but have to use
-`GetStaticProps` instead. To make things interesting we will:
+`GetStaticProps` instead. To keep things interesting we will:
 
 - Add an additional translatable message but this time using the Lingui `t` macro
 - Run a new message extraction

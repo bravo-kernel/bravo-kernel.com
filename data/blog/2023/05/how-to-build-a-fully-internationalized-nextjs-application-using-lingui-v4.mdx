@@ -344,9 +344,11 @@ export default function App({ Component, pageProps }: AppProps) {
 
 ### index.ts
 
-Lingui v4 supports all [Nextjs page rendering methods](https://nextjs.org/docs/basic-features/pages) and because
-our application will use Server Side Rendering (SSR) for our index page we replace the content of 
-`src/pages/index.tsx` with the following code:
+Because Lingui v4 supports all [Nextjs page rendering methods](https://nextjs.org/docs/basic-features/pages) 
+you should always select the rendering method best suitable for your application page.
+
+In this tutorial, we choose to use Server Side Rendering (SSR) to activate the Lingui message catalog for our
+index page and enable it by replacing the content of `src/pages/index.tsx` with the following code:
 
 ```ts
 import styles from "@/styles/Home.module.css";
@@ -372,6 +374,8 @@ export default function Home() {
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<any>> {
+  // some server side logic
+
   return {
     props: {
       i18n: await loadCatalog(ctx.locale as string),
@@ -385,6 +389,10 @@ If you browse to `localhost:3000` you should now see the following:
 - A list with our three languages
 - Clicking a language will load the translations for that language, handled by the Lingui `Trans` macro
 - When browsing to pseudo, diacritics will be shown for all messages that require a translation which is very useful for debugging purposes
+because untranslated elements will not contain diacritics
+
+> **Pro-Tip:** if you are only using `GetServerSideProps()` to load the Lingui message catalog, you should switch to
+> using `GetStaticProps()` as that will unblock Nextjs static optimizations for static pages.
 
 ### 404.tsx
 

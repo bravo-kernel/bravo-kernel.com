@@ -20,6 +20,11 @@ as well as a fully functioning Typescript sample application with:
 - Nextjs [subpath routing](https://nextjs.org/docs/advanced-features/i18n-routing#sub-path-routing)
 - Translation files in `*.po` format, ready for super smooth [Crowdin](https://crowdin.com) online translations
 - A language switcher (optionally)
+- Working test suite integration using Vitest and the Lingui swc-plugin
+
+## Disclaimer
+
+Please note that Lingui is not limited to Nextjs and can be used in any **Javascript** application.
 
 ## TL;DR
 
@@ -141,6 +146,17 @@ To prepare for extracting, add the following npm run script to your `package.jso
     "translations:extract": "lingui extract --clean",
 ```
 
+### crowdin.yml
+
+Create a `crowdin.yml` configuration file in the root of your project with below content to ensure
+that Crowdin will detect, use and update the correct message catalogs in your application.
+
+```yml
+files:
+  - source: /src/translations/locales/en-us.po
+    translation: /src/translations/locales/%locale%.po
+```
+
 ## 3. Setting up the application
 
 ### _document.tsx
@@ -214,6 +230,10 @@ if (process.env.NODE_ENV !== "production") {
 export default languages
 ```
 
+Please note that we are deliberately using the Lingui `msg` macro here so that backticked messages appear in our
+`*.po` message catalog files and that we can use those messages anywhere in our code (later on).
+For more information about the `msg` macro and when to use it/not use it please visit [this page](https://lingui.dev/ref/macro#definemessage).
+
 > **Lingui Pro-Tip:** stick to using natural language for your translatable messages and avoid using IDs at all cost. 
 > This will prevent double work and will lead to much cleaner code and a better translator experience. 
 
@@ -225,7 +245,7 @@ Message extraction is an essential step in the internationalization process. It 
 - Extracting all translatable messages into a `*.po` message catalog
 - Thereby keeping your message catalogs in-sync with your source code
 
-Even though we currently only have a limited set of translatable message in our code (found in `languages.ts`) we
+Even though we currently only have a limited set of translatable message in our code (the backticked `msg` strings found in `languages.ts`) we
 will now run an extraction to get familiar with the process.
 
 ```bash
@@ -271,11 +291,16 @@ msgstr ""
 
 ## 6. Translating messages
 
-Please be aware that manually updating message catalog files is **highly discouraged**. Alternatives like the
-[Crowdin online editor](https://support.crowdin.com/online-editor/)
-provide more efficient workflows, better automation possibilities and a far super translator experience.
+Translators can translate the messages found inside the message catalogs using three methods:
 
-Nevertheless, for now, we will do our first actual translation by changing the content of `/src/translations/locales/nl-nl.po` to:
+- **Manually** by directly editing the `*.po` files (highly discouraged)
+- **Using local tools** like the [Poedit Translation Editor](https://poedit.net/)
+- **Using online collaboration platforms** like Crowdin which provide more efficient workflows, better automation possibilities and
+a far superior translator experience because translators only have to use the [Crowdin online editor](https://support.crowdin.com/online-editor/). 
+For an impression of the (limited amount of) steps required for Crowdin translators please visit
+[this page](https://github.com/alt3/rank-my-wallet/blob/main/contributing.md#translations).
+
+For now, we will now make our first translations by manually changing the content of `/src/translations/locales/nl-nl.po` to:
 
 ```
 msgid ""
@@ -413,6 +438,11 @@ If you browse to `localhost:3000` you should now see the following:
 - When browsing to pseudo, diacritics will be shown for all messages that require a translation which is very useful for debugging purposes
 because untranslated elements will not contain diacritics
 
+Please note that we are deliberately using the Lingui `Trans` macro here. This macro is intended 
+for use within JSX and supports static messages, messages with variables and even messages with inline markup.
+For more information about the `Trans ` macro and when to use it/not use it please visit
+[this page](https://lingui.dev/ref/macro#trans).
+
 > **Pro-Tip:** if you are only using `GetServerSideProps()` to load the Lingui message catalog, you should switch to
 > using `GetStaticProps()` as that will unblock Nextjs static optimizations for static pages.
 
@@ -459,7 +489,12 @@ export async function getStaticProps(
 
 ```
 
-Now run `npm run translations:extract` and update the `nl-nl` message catalog so that it looks like this:
+Please note that we are now also using the Lingui `t` macro here. This macro is basically identical to the 
+`Trans` macro but simply returns a translated string (instead of a JSX element) and is therefore perfectly
+suited for translating page properties etc. For more information about the `t ` macro and when to use it/not use
+it please visit [this page](https://lingui.dev/ref/macro#t).
+
+Let's continue with the tutorial by running `npm run translations:extract` and updating the `nl-nl` message catalog so that it looks like this:
 
 ```po
 msgid ""
@@ -484,7 +519,7 @@ If things went well, browsing to the non-existing page `localhost:3000/nl-nl/wha
 - Page title using Dutch message for `Page Not Found`
 - Html using Dutch message for `Page Not Found`
 
-## 9. Locale Switcher
+## 8. Locale Switcher
 
 No internationalized application is complete without a proper locale switcher that allows the user 
 to switch languages using a dropdown menu. To prevent duplication of already available information, 
@@ -493,8 +528,62 @@ please turn to these excellent examples for inspiration:
 - [Lingui Switcher component](https://github.com/lingui/js-lingui/blob/main/examples/nextjs-swc/src/components/Switcher.tsx)
 - [RankMyWallet LocaleSwitcher component](https://github.com/alt3/rank-my-wallet/blob/main/src/components/LocaleSwitcher.tsx)
 
-## 10. Good To Know
+## 9. Test suite integration
 
+The Lingui swc-plugin is compatible with most test suites but in this tutorial we will
+use [Vitest](https://vitest.dev/) to provide you with an example of test suite integration.
+
+Install the required dependencies by running:
+
+```bash
+npm install jsdom @testing-library/react --save-dev
+npm install vitest vite-tsconfig-paths @vitejs/plugin-react-swc --save-dev
+```
+
+Add the following npm run script to `package.json`:
+
+```json
+    "test": "vitest run",
+```
+
+Create `vitest.config.ts` in the root of your project with the following content:
+
+```ts
+import { loadEnvConfig } from "@next/env"
+import { defineConfig } from "vitest/config"
+
+import react from "@vitejs/plugin-react-swc"
+import tsconfigPaths from "vite-tsconfig-paths"
+
+const projectDir = process.cwd()
+loadEnvConfig(projectDir)
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react({ plugins: [["@lingui/swc-plugin", {}]] }), tsconfigPaths()],
+  test: {
+    dir: "./",
+  },
+})
+```
+
+Create test file `src/translations/dummy.test.ts" with the following content:
+
+```ts
+import { it, expect } from "vitest"
+
+it("is just a dummy test to make sure vitest works with lingui swc-plugin", () => {
+    expect("a").toEqual("a")
+})
+```
+
+If things went well, executing the test suite by running `npm run test` should produce a screen similar to:
+
+![Lingui extract command line result](/static/images/blog/2023/05/how-to-build-a-fully-internationalized-nextjs-application-using-lingui-v4/vitest-run-result.png)
+
+## 10. Please remember
+
+- Try to use the Lingui `Trans`, `t` and `msg` macros wherever possible
 - Use the Lingui [context property](https://lingui.dev/tutorials/react-patterns#providing-a-context-for-a-message)
 if you want to provide hints to translators
 - Use `msg` for constants and when passing translatable messages between functions
@@ -510,12 +599,16 @@ and support multiple languages in your Nextjs application but there is more to e
 - Make sure to check out the various (more extensive) application examples in the [Lingui examples folder](https://github.com/lingui/js-lingui/tree/main/examples)
 - Try implementing a [next-sitemap](https://github.com/iamvishnusankar/next-sitemap) with support for i18n, implementation example [found here](https://github.com/alt3/rank-my-wallet/blob/main/next-sitemap.config.js)
 
-Lastly, it is **highly recommended** to try the free version of [Crowdin](https://crowdin.com) which provides more than sufficient
+### Lastly
+
+**It is highly recommended** to register with, and try the free version of, [Crowdin](https://crowdin.com) which provides more than sufficient
 functionality for small(er) projects:
 
 - Superior translator experience because translators can use the online editor, no coding skills required!
-- One Github integration for automated translations via Pull Requests
+- One [Github integration](https://support.crowdin.com/github-integration/) for automated translations via Pull Requests
 - Instant pre-translations for new languages using machine learning
 - A description of the Crowdin workflow can be [found here](https://lingui.dev/tools/crowdin).
+
+### Support
 
 If you have any additional questions regarding Lingui or need support, please visit the [Lingui Discord server](https://discord.gg/gFWwAYnMtA).

@@ -149,7 +149,7 @@ To prepare for extracting, add the following npm run script to your `package.jso
 ### crowdin.yml
 
 Create a `crowdin.yml` configuration file in the root of your project with below content to ensure
-that Crowdin will detect, use and update the correct message catalogs in your application.
+that Crowdin will be able to detect, use and update the correct message catalogs in your application.
 
 ```yml
 files:
@@ -193,7 +193,7 @@ Create `src/translations/languages.ts` which will:
 
 - Help keep our code clean
 - Prepare for adding additional languages
-- Allow us to run our first CLI message extraction (which will detect the three translatable messages using the Lingui `msg` backtick function call)
+- Allow us to run our first CLI message extraction (which will detect the three translatable messages using the Lingui `msg` macro)
 
 ```ts
 import { MessageDescriptor } from "@lingui/core"
@@ -245,7 +245,7 @@ Message extraction is an essential step in the internationalization process. It 
 - Extracting all translatable messages into a `*.po` message catalog
 - Thereby keeping your message catalogs in-sync with your source code
 
-Even though we currently only have a limited set of translatable message in our code (the backticked `msg` strings found in `languages.ts`) we
+Even though we currently only have a limited set of translatable message in our code (the backticked `msg` macros found in `languages.ts`) we
 will now run an extraction to get familiar with the process.
 
 ```bash
@@ -514,10 +514,10 @@ msgid "Pseudo"
 msgstr "Pseudo"
 ```
 
-If things went well, browsing to the non-existing page `localhost:3000/nl-nl/whatever` should show:
+If things went well, browsing to the non-existing page `localhost:3000/nl-nl/whatever` should show the Dutch 404 page:
 
-- Page title using Dutch message for `Page Not Found`
-- Html using Dutch message for `Page Not Found`
+- Using the Dutch message translation for page title `Page Not Found`
+- Using the Dutch message translation for page content `Page Not Found`
 
 ## 8. Locale Switcher
 
@@ -607,7 +607,7 @@ functionality for small(er) projects:
 - Superior translator experience because translators can use the online editor, no coding skills required!
 - One [Github integration](https://support.crowdin.com/github-integration/) for automated translations via Pull Requests
 - Instant pre-translations for new languages using machine learning
-- A description of the Crowdin workflow can be [found here](https://lingui.dev/tools/crowdin).
+- A description of the Crowdin workflow is described at this [Lingui page](https://lingui.dev/tools/crowdin)
 
 ### Support
 

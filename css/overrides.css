@@ -1,3 +1,7 @@
 .giscus, .giscus-frame {
   width: 100%;
 }
+
+h2#table-of-contents + ul > li {
+  list-style-type: none;
+}

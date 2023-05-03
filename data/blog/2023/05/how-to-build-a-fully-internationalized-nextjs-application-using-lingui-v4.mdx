@@ -1,6 +1,6 @@
 ---
 title: How to build a fully internationalized Nextjs application using Lingui v4
-date: 2023-04-27 14:48:07
+date: 2023-05-03 14:48:07
 tags:
 - nextjs
 - tutorial
@@ -200,7 +200,7 @@ To make sure Lingui will function as expected, create the following two folders:
 Create `src/translations/languages.ts` which will:
 
 - Help keep our code clean
-- Prepare for adding additional languages
+- Prepare for adding additional languages and properties
 - Allow us to run our first CLI message extraction (which will detect the three translatable messages using the Lingui `msg` macro)
 
 ```ts
@@ -211,6 +211,7 @@ interface Languages {
   locale: string
   msg: MessageDescriptor
   territory?: string
+  rtl: boolean
 }
 
 export type LOCALES = "en-us" | "nl-nl" | "pseudo"
@@ -220,11 +221,13 @@ const languages: Languages[] = [
     locale: "en-us",
     msg: msg`English`,
     territory: "US",
+    rtl: false,
   },
   {
     locale: "nl-nl",
     msg: msg`Dutch`,
     territory: "NL",
+    rtl: false,
   },
 ]
 
@@ -232,6 +235,7 @@ if (process.env.NODE_ENV !== "production") {
   languages.push({
     locale: "pseudo",
     msg: msg`Pseudo`,
+    rtl: false,
   })
 }
 

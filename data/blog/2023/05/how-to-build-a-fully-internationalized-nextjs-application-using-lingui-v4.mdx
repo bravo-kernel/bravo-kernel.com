@@ -133,6 +133,16 @@ const nextConfig = {
     locales: linguiConfig.locales,
     defaultLocale: linguiConfig.sourceLocale,
   },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.po$/,
+      use: {
+        loader: "@lingui/loader", // https://github.com/lingui/js-lingui/issues/1782
+      },
+    })
+
+    return config
+  },
 }
 
 module.exports = nextConfig
@@ -350,7 +360,7 @@ import { useRouter } from "next/router"
 import { useEffect } from "react";
 
 export async function loadCatalog(locale: string) {
-  const { messages } = await import(`@lingui/loader!./locales/${locale}.po`)
+  const { messages } = await import(`./locales/${locale}.po`)
 
   return messages
 }

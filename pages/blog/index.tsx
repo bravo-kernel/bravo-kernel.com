@@ -1,3 +1,4 @@
+import { AdvertisementResponsive } from '@/components/AdvertisementResponsive'
 import siteMetadata from '@/data/siteMetadata'
 import ListLayout from '@/layouts/ListLayout'
 import { PageSEO } from '@/components/SEO'
@@ -33,12 +34,15 @@ export default function BlogPage({
   return (
     <>
       <PageSEO title={`Blog - ${siteMetadata.author}`} description={siteMetadata.description} />
+
       <ListLayout
         posts={posts}
         initialDisplayPosts={initialDisplayPosts}
         pagination={pagination}
         title="All Posts"
       />
+
+      <AdvertisementResponsive className="mt-5 mb-10 min-h-[280px]" />
     </>
   )
 }

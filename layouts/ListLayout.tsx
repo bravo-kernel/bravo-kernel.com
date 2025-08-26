@@ -108,6 +108,7 @@ export default function ListLayout({
             </svg>
           </div>
         </div>
+
         <ul>
           {!filteredBlogPosts.length && 'No posts found.'}
           {displayPosts.map((post) => {

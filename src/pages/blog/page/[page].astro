@@ -1,0 +1,27 @@
+---
+import type { GetStaticPaths } from 'astro'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import PostList from '@/components/PostList.astro'
+import { getSortedPosts } from '@/lib/posts'
+import { POSTS_PER_PAGE } from '@/config'
+
+// The non-rest [page].astro form numbers page 1, giving /blog/page/1 ... /blog/page/10.
+// /blog/page/1 must keep existing as its own URL: it is in the live sitemap.
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getSortedPosts()
+  return paginate(posts, { pageSize: POSTS_PER_PAGE })
+}) satisfies GetStaticPaths
+
+const { page } = Astro.props
+const allPosts = await getSortedPosts()
+
+// Page 1 is served at both /blog and /blog/page/1; point them at one canonical.
+const canonical = page.currentPage === 1 ? '/blog' : page.url.current
+---
+
+<BaseLayout
+  title={page.currentPage === 1 ? 'Blog' : `Blog — page ${page.currentPage}`}
+  canonical={canonical}
+>
+  <PostList page={page} allPosts={allPosts} title="Blog" />
+</BaseLayout>

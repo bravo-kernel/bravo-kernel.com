@@ -1,0 +1,144 @@
+---
+import type { MarkdownHeading } from 'astro'
+import BaseLayout from './BaseLayout.astro'
+import AdSense from '@/components/AdSense.astro'
+import Giscus from '@/components/Giscus.astro'
+import Tag from '@/components/Tag.astro'
+import TableOfContents from '@/components/TableOfContents.astro'
+import { siteConfig } from '@/config'
+import { excerpt, formatDate, postUrl, type Post } from '@/lib/posts'
+
+interface Props {
+  post: Post
+  headings: MarkdownHeading[]
+  prev?: Post
+  next?: Post
+}
+
+const { post, headings, prev, next } = Astro.props
+const { title, date, lastmod, tags, toc } = post.data
+
+const editUrl = `${siteConfig.siteRepo}/edit/main/data/blog/${post.id}.mdx`
+---
+
+<BaseLayout
+  title={title}
+  description={excerpt(post, 160)}
+  canonical={postUrl(post)}
+  ogType="article"
+  publishedAt={date}
+  modifiedAt={lastmod ?? date}
+>
+  <article>
+    <header class="space-y-4 border-b border-gray-200 pb-8 dark:border-gray-800">
+      <div class="flex flex-wrap items-center gap-x-3 text-sm text-gray-500 dark:text-gray-400">
+        <time datetime={date.toISOString()}>{formatDate(date, siteConfig.locale)}</time>
+        {
+          lastmod && lastmod.getTime() !== date.getTime() && (
+            <>
+              <span aria-hidden="true">&middot;</span>
+              <span>
+                updated{' '}
+                <time datetime={lastmod.toISOString()}>
+                  {formatDate(lastmod, siteConfig.locale)}
+                </time>
+              </span>
+            </>
+          )
+        }
+      </div>
+
+      <h1
+        class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl dark:text-gray-100"
+      >
+        {title}
+      </h1>
+
+      {
+        tags.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Tag tag={tag} />
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    <AdSense class="my-8 min-h-[280px]" />
+
+    {
+      toc && (
+        <TableOfContents
+          headings={headings}
+          toHeading={2}
+          exclude={[
+            'Table of Contents',
+            'Disclaimer',
+            'TL;DR',
+            '10. Please remember',
+            '11. Rounding Up',
+          ]}
+        />
+      )
+    }
+
+    <div class="prose-post py-8">
+      <slot />
+    </div>
+
+    <div class="border-t border-gray-200 pt-6 text-sm dark:border-gray-800">
+      <a
+        href={editUrl}
+        class="inline-flex items-center gap-1.5 text-gray-500 transition hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+      >
+        <svg
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"
+          ></path>
+        </svg>
+        Edit this page on GitHub
+      </a>
+    </div>
+
+    <AdSense class="my-8 min-h-[280px]" />
+
+    {
+      (prev || next) && (
+        <nav class="flex flex-col gap-4 border-t border-gray-200 pt-6 text-sm sm:flex-row sm:justify-between dark:border-gray-800">
+          {prev ? (
+            <a
+              href={postUrl(prev)}
+              rel="prev"
+              class="font-medium text-primary-600 hover:underline dark:text-primary-400"
+            >
+              &larr; {prev.data.title}
+            </a>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <a
+              href={postUrl(next)}
+              rel="next"
+              class="font-medium text-primary-600 hover:underline sm:text-right dark:text-primary-400"
+            >
+              {next.data.title} &rarr;
+            </a>
+          )}
+        </nav>
+      )
+    }
+
+    <Giscus />
+  </article>
+</BaseLayout>

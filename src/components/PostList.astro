@@ -1,0 +1,216 @@
+---
+import type { Page } from 'astro'
+import Tag from './Tag.astro'
+import { excerpt, formatDate, postUrl, type Post } from '@/lib/posts'
+import { siteConfig } from '@/config'
+
+interface Props {
+  page: Page<Post>
+  /** Full post set for the client-side search, which spans every page. */
+  allPosts: Post[]
+  title: string
+}
+
+const { page, allPosts, title } = Astro.props
+
+const searchIndex = allPosts.map((post) => ({
+  title: post.data.title,
+  url: postUrl(post),
+  date: formatDate(post.data.date, siteConfig.locale),
+  iso: post.data.date.toISOString(),
+  tags: post.data.tags,
+  excerpt: excerpt(post, 160),
+}))
+---
+
+<div class="space-y-8">
+  <div class="space-y-4">
+    <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl dark:text-gray-100">
+      {title}
+    </h1>
+
+    <div class="relative">
+      <input
+        id="post-search"
+        type="search"
+        autocomplete="off"
+        placeholder="Search articles"
+        aria-label="Search articles"
+        class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-4 pl-10 text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+      />
+      <svg
+        class="pointer-events-none absolute top-3 left-3 h-5 w-5 text-gray-400"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </div>
+  </div>
+
+  {/* Server-rendered page of posts. Hidden while a search is active. */}
+  <ul id="post-list" class="divide-y divide-gray-200 dark:divide-gray-800">
+    {
+      page.data.map((post) => (
+        <li class="py-6">
+          <article class="space-y-2">
+            <time
+              datetime={post.data.date.toISOString()}
+              class="text-sm text-gray-500 dark:text-gray-400"
+            >
+              {formatDate(post.data.date, siteConfig.locale)}
+            </time>
+            <h2 class="text-xl font-bold tracking-tight">
+              <a
+                href={postUrl(post)}
+                class="text-gray-900 transition hover:text-primary-600 dark:text-gray-100 dark:hover:text-primary-400"
+              >
+                {post.data.title}
+              </a>
+            </h2>
+            {post.data.tags.length > 0 && (
+              <div class="flex flex-wrap gap-2">
+                {post.data.tags.map((tag) => (
+                  <Tag tag={tag} />
+                ))}
+              </div>
+            )}
+            <p class="text-gray-600 dark:text-gray-400">{excerpt(post)}</p>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+
+  {/* Search results, rendered client-side across all posts. */}
+  <ul id="search-results" class="hidden divide-y divide-gray-200 dark:divide-gray-800"></ul>
+  <p id="search-empty" class="hidden py-6 text-gray-600 dark:text-gray-400">No posts found.</p>
+
+  {
+    page.lastPage > 1 && (
+      <nav
+        id="pagination"
+        class="flex items-center justify-between border-t border-gray-200 pt-6 text-sm dark:border-gray-800"
+      >
+        {page.url.prev ? (
+          <a
+            href={page.url.prev === '/blog/page/1' ? '/blog' : page.url.prev}
+            rel="prev"
+            class="font-medium text-primary-600 hover:underline dark:text-primary-400"
+          >
+            &larr; Previous
+          </a>
+        ) : (
+          <span class="text-gray-400 dark:text-gray-600">&larr; Previous</span>
+        )}
+
+        <span class="text-gray-500 dark:text-gray-400">
+          {page.currentPage} of {page.lastPage}
+        </span>
+
+        {page.url.next ? (
+          <a
+            href={page.url.next}
+            rel="next"
+            class="font-medium text-primary-600 hover:underline dark:text-primary-400"
+          >
+            Next &rarr;
+          </a>
+        ) : (
+          <span class="text-gray-400 dark:text-gray-600">Next &rarr;</span>
+        )}
+      </nav>
+    )
+  }
+</div>
+
+<script
+  type="application/json"
+  id="search-index"
+  is:inline
+  set:html={JSON.stringify(searchIndex)}
+/>
+
+<script>
+  const input = document.getElementById('post-search') as HTMLInputElement | null
+  const list = document.getElementById('post-list')
+  const results = document.getElementById('search-results')
+  const empty = document.getElementById('search-empty')
+  const pagination = document.getElementById('pagination')
+  const indexEl = document.getElementById('search-index')
+
+  if (input && list && results && empty && indexEl) {
+    type Entry = {
+      title: string
+      url: string
+      date: string
+      iso: string
+      tags: string[]
+      excerpt: string
+    }
+
+    const posts: Entry[] = JSON.parse(indexEl.textContent || '[]')
+
+    const escapeHtml = (value: string) =>
+      value.replace(
+        /[&<>"']/g,
+        (char) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] as string,
+      )
+
+    const render = (matches: Entry[]) => {
+      results.innerHTML = matches
+        .map(
+          (post) => `
+            <li class="py-6">
+              <article class="space-y-2">
+                <time datetime="${post.iso}" class="text-sm text-gray-500 dark:text-gray-400">${escapeHtml(post.date)}</time>
+                <h2 class="text-xl font-bold tracking-tight">
+                  <a href="${post.url}" class="text-gray-900 transition hover:text-primary-600 dark:text-gray-100 dark:hover:text-primary-400">${escapeHtml(post.title)}</a>
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                  ${post.tags
+                    .map(
+                      (tag) =>
+                        `<a href="/tags/${encodeURIComponent(tag)}" class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-primary-100 hover:text-primary-800 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary-900/40 dark:hover:text-primary-300">${escapeHtml(tag)}</a>`,
+                    )
+                    .join('')}
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">${escapeHtml(post.excerpt)}</p>
+              </article>
+            </li>`,
+        )
+        .join('')
+    }
+
+    const apply = () => {
+      const query = input.value.trim().toLowerCase()
+
+      if (!query) {
+        list.classList.remove('hidden')
+        results.classList.add('hidden')
+        empty.classList.add('hidden')
+        pagination?.classList.remove('hidden')
+        return
+      }
+
+      const matches = posts.filter((post) =>
+        `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLowerCase().includes(query),
+      )
+
+      render(matches)
+      list.classList.add('hidden')
+      pagination?.classList.add('hidden')
+      results.classList.toggle('hidden', matches.length === 0)
+      empty.classList.toggle('hidden', matches.length > 0)
+    }
+
+    input.addEventListener('input', apply)
+  }
+</script>

@@ -1,0 +1,54 @@
+---
+import { giscusConfig } from '@/config'
+
+// Only render when the repo is actually configured, so local builds without
+// the NEXT_PUBLIC_GISCUS_* variables do not emit a broken widget.
+const enabled = Boolean(giscusConfig.repo && giscusConfig.repositoryId)
+---
+
+{
+  enabled && (
+    <section
+      id="comment"
+      class="mt-12 border-t border-gray-200 pt-8 dark:border-gray-800"
+      data-giscus={JSON.stringify(giscusConfig)}
+    />
+  )
+}
+
+{
+  /* Injected client-side so giscus gets the theme that is actually active on
+    first paint, rather than a default that then has to be corrected. */
+}
+<script is:inline>
+  ;(function () {
+    var mount = document.getElementById('comment')
+    if (!mount || !mount.dataset.giscus) return
+
+    var config = JSON.parse(mount.dataset.giscus)
+    var isDark = document.documentElement.classList.contains('dark')
+
+    var attrs = {
+      repo: config.repo,
+      'repo-id': config.repositoryId,
+      category: config.category,
+      'category-id': config.categoryId,
+      mapping: config.mapping,
+      'reactions-enabled': config.reactions,
+      'emit-metadata': config.metadata,
+      'input-position': 'bottom',
+      theme: isDark ? config.darkTheme : config.theme,
+      lang: config.lang,
+    }
+
+    var script = document.createElement('script')
+    script.src = 'https://giscus.app/client.js'
+    script.async = true
+    script.crossOrigin = 'anonymous'
+    Object.keys(attrs).forEach(function (key) {
+      script.setAttribute('data-' + key, attrs[key])
+    })
+
+    mount.appendChild(script)
+  })()
+</script>

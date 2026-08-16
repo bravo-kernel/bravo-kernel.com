@@ -1,0 +1,14 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import PostList from '@/components/PostList.astro'
+import { getSortedPosts, makeFirstPage } from '@/lib/posts'
+
+// paginate() cannot run in a non-dynamic route, so page 1 is built by hand here.
+// It renders the same component as /blog/page/1, so the two stay identical.
+const posts = await getSortedPosts()
+const page = makeFirstPage(posts)
+---
+
+<BaseLayout title="Blog" canonical="/blog">
+  <PostList page={page} allPosts={posts} title="Blog" />
+</BaseLayout>

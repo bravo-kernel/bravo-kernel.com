@@ -1,0 +1,27 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { render } from 'astro:content'
+import PostLayout from '@/layouts/PostLayout.astro'
+import { getSortedPosts } from '@/lib/posts'
+
+// A rest param is required: ids contain slashes (2014/08/how-to-...).
+export const getStaticPaths = (async () => {
+  const posts = await getSortedPosts()
+  return posts.map((post, index) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      // Sorted newest-first, so the next entry is the older post.
+      prev: posts[index + 1],
+      next: posts[index - 1],
+    },
+  }))
+}) satisfies GetStaticPaths
+
+const { post, prev, next } = Astro.props
+const { Content, headings } = await render(post)
+---
+
+<PostLayout post={post} headings={headings} prev={prev} next={next}>
+  <Content />
+</PostLayout>

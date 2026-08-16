@@ -1,0 +1,61 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/categories/:tag",
+      "destination": "/tags/:tag",
+      "permanent": true
+    },
+    {
+      "source": "/page/:n(\\d+)",
+      "destination": "/blog/page/:n",
+      "permanent": true
+    },
+    {
+      "source": "/:year(\\d{4})/:month(\\d{2})/:slug",
+      "destination": "/blog/:year/:month/:slug",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app pagead2.googlesyndication.com ep2.adtrafficquality.google; style-src 'self' 'unsafe-inline' giscus.app; img-src * blob: data:; media-src 'none'; connect-src *; font-src 'self'; frame-src giscus.app pagead2.googlesyndication.com googleads.g.doubleclick.net ep2.adtrafficquality.google www.google.com"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "on"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
+}

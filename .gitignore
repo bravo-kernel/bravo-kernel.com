@@ -21,8 +21,8 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# local env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# env files — real values are supplied by the platform (or a local .env).
+# .env.example is the tracked template and must stay committed.
+.env
+.env.*
+!.env.example

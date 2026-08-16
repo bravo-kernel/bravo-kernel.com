@@ -18,15 +18,39 @@ export const POSTS_PER_PAGE = 5
 export const navLinks = [{ href: '/tags', title: 'Tags' }] as const
 
 /**
- * Giscus still reads the NEXT_PUBLIC_* variable names on purpose: these are
- * baked into the static HTML at build time, so nothing in the Vercel dashboard
- * has to change and comments cannot silently break on deploy.
+ * Giscus configuration.
  *
- * Read through import.meta.env, which Astro populates from both the local .env
+ * The NEXT_PUBLIC_* names are kept from the previous stack so the existing
+ * Vercel environment variables keep working. The values are public by design
+ * (the giscus script receives them in the browser), but they stay in the
+ * environment so a fork can point comments elsewhere without editing source.
+ *
+ * Read through import.meta.env, which Astro populates from both a local .env
  * file and real platform environment variables. process.env would only cover
  * the latter, so comments would work on Vercel but not locally.
  */
 const env = import.meta.env as Record<string, string | undefined>
+
+const GISCUS_VARS = [
+  'NEXT_PUBLIC_GISCUS_REPO',
+  'NEXT_PUBLIC_GISCUS_REPOSITORY_ID',
+  'NEXT_PUBLIC_GISCUS_CATEGORY',
+  'NEXT_PUBLIC_GISCUS_CATEGORY_ID',
+] as const
+
+const missingGiscusVars = GISCUS_VARS.filter((name) => !env[name])
+
+// Fail loudly rather than silently shipping pages with no comment section.
+// .env is not committed, so a fresh clone or an unconfigured deploy would
+// otherwise look completely fine while quietly dropping every discussion.
+if (missingGiscusVars.length > 0) {
+  console.warn(
+    `\n⚠  Giscus is disabled — missing ${missingGiscusVars.join(', ')}.` +
+      `\n   Comments will be omitted from every post.` +
+      `\n   Copy .env.example to .env locally, or set these as Vercel project` +
+      ` environment variables.\n`,
+  )
+}
 
 export const giscusConfig = {
   repo: env.NEXT_PUBLIC_GISCUS_REPO ?? '',

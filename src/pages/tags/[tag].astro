@@ -36,8 +36,7 @@ const { tag, posts } = Astro.props
         {tag}
       </h1>
       <p class="text-gray-500 dark:text-gray-400">
-        {posts.length}
-        {posts.length === 1 ? 'post' : 'posts'}
+        {`${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`}
       </p>
     </div>
 

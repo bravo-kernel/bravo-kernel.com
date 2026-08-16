@@ -41,7 +41,13 @@ export const giscusConfig = {
   lang: 'en',
 } as const
 
+/**
+ * Flip `enabled` to re-enable ads. It gates both the loader script in
+ * BaseLayout and every ad unit, so nothing else needs changing. The
+ * corresponding CSP entries are left in place in vercel.json.
+ */
 export const adsense = {
+  enabled: false,
   client: 'ca-pub-1161412231963156',
   slot: '5565156947',
 } as const
